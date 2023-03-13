@@ -1,3 +1,8 @@
+/*
+ * Author: Shelby Jorgensen
+ * Created for CS302 Advanced Data Structures
+ */
+
 package Lab7;
 
 import java.io.*;
@@ -8,34 +13,39 @@ public class Lab7
      *  Problem 1: Sort the list of neighbours for each vertex.
      */
     private static void problem1(Graph g) {
-    	LinkedList<LinkedList<Integer>> sorted = new LinkedList<LinkedList<Integer>>();
+    	// Temp graph used to store edges as they are sorted, and the indexes of the next sorted location
+    	int[][] sortedGraph = new int[g.noOfVertices][];
+    	int[] indexes = new int[g.noOfVertices];
+    	
+    	// Initialize the size of each set of edges based on the vertices
     	for(int i = 0; i < g.noOfVertices; i++) {
-    		LinkedList<Integer> temp = new LinkedList<Integer>();
-    		//temp.add(i);
-    		sorted.add(i, temp);
+    		int[] temp = new int[g.edges[i].length];
+    		sortedGraph[i] = temp;
     	}
     	
+    	// Loop through each vertices, add edges based off their relation to the current vertices, and the stored index location
     	for(int i = 0; i < g.noOfVertices; i++) {
     		int[] edges = g.edges[i];
     		for(int j = 0; j < edges.length; j++) {
-    			sorted.get(edges[j]).add(i);
+    			sortedGraph[edges[j]][indexes[edges[j]]] += i;
+    			indexes[edges[j]] += 1;
     		}
-    		
     	}
     	
-    	int[][] intArray = sorted.stream().map(  u  ->  u.stream().mapToInt(i->i).toArray()  ).toArray(int[][]::new);
-    	
+    	// Replace the provided graph with the sorted graph
     	for(int i = 0; i < g.noOfVertices; i++) {
-    		g.edges[i] = intArray[i];
+    		g.edges[i] = sortedGraph[i];
     	}
-    	
     }
     /**
      *  Problem 2: Find the distances in a directed acyclic graph.
      */
     private static int[] problem2(Graph g, int startId) {
     	int[] dist = new int[g.noOfVertices];
+    	// Use Breadth first searching to get the topological order of the graph
     	int[] topoOrder = g.bfs(startId)[2];
+    	
+    	// Initialize the value of each distance to the max value, and set the start distance to 0
     	for(int i = 0; i < dist.length; i++) {
     		dist[i] = Integer.MAX_VALUE;
     	}
@@ -44,9 +54,11 @@ public class Lab7
     	for(int i = 0; i < topoOrder.length; i++) {
     		// Find any value that is either the start id, or those that are connected to it
     		if(dist[i] != Integer.MAX_VALUE) {
+    			// Get the edges and weights of the current vertices, relax the outgoing edges
     			int[] edges = g.edges[i];
     			int[] weights = g.weights[i];
     			for(int j = 0; j < edges.length; j++) {	
+    				// If the relaxed edges procude a smaller distance, update the stored distance value
     				if(g.relax(i, j, dist)) {
     					dist[edges[j]] = dist[i] + weights[j];
     				}
@@ -57,6 +69,7 @@ public class Lab7
         return dist;
     }
     // ---------------------------------------------------------------------
+    // ALL CODE BELOW WAS PROVIDED AS PART OF THE ASSIGNMENT
     // Do not change any of the code below!
     private static final int LabNo = 7;
     private static final Random rng = new Random(123456);
